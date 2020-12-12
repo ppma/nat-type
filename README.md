@@ -6,7 +6,7 @@
 
 ## 介绍
 
-[nat-type](https://github.com/ppma/nat-type) 是 [RFC 3489][1]
+[nat-type](/ppma/nat-type) 是 [RFC 3489][1]
 的go实现，从 [NatTypeDetector](https://github.com/cdnbye/NatTypeDetector) 移植而来。
 代码写得烂，思想跟不上，就这样了
 
