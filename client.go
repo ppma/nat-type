@@ -25,7 +25,7 @@ func getAddr(stun string, local string) (*net.UDPAddr, *net.UDPAddr, error) {
 	return stunAddr, localAddr, nil
 }
 
-func Query(stun string, local string) (*StunResult, error) {
+func Query(stun string, local string) (*Result, error) {
 	stunAddr, localAddr, err := getAddr(stun, local)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func Query(stun string, local string) (*StunResult, error) {
 	return Query2(stunAddr, socket, localAddr)
 }
 
-func Query1(stun string, socket *net.UDPConn, local string) (*StunResult, error) {
+func Query1(stun string, socket *net.UDPConn, local string) (*Result, error) {
 	stunAddr, localAddr, err := getAddr(stun, local)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func Query1(stun string, socket *net.UDPConn, local string) (*StunResult, error)
 	return Query2(stunAddr, socket, localAddr)
 }
 
-func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) (*StunResult, error) {
+func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) (*Result, error) {
 
 	/*
 	    In test I, the client sends a STUN Binding Request to a server, without any flags set in the
@@ -171,7 +171,7 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 
 // Does STUN transaction. Returns transaction response or null if transaction failed.
 // Returns transaction response or null if transaction failed.
-func doTransaction(request *StunMessage, socket *net.UDPConn, remoteEndPoint net.Addr, timeout int) (*StunMessage, error) {
+func doTransaction(request *Message, socket *net.UDPConn, remoteEndPoint net.Addr, timeout int) (*Message, error) {
 	t1 := time.Now()
 	requestBytes := request.ToByteData()
 	if request.GetChangeRequest() != nil {

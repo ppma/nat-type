@@ -7,56 +7,56 @@ import (
 	"net"
 )
 
-type StunMessage struct {
+type Message struct {
 	transactionId   []byte
-	messageType     StunMessageType
+	messageType     MessageType
 	magicCookie     int
 	mappedAddress   *net.UDPAddr
 	responseAddress *net.UDPAddr
 	sourceAddress   *net.UDPAddr
 	changedAddress  *net.UDPAddr
-	changeRequest   *StunChangeRequest
-	errorCode       *StunErrorCode
+	changeRequest   *Request
+	errorCode       *Code
 }
 
-func (message *StunMessage) GetTransactionId() []byte {
+func (message *Message) GetTransactionId() []byte {
 	return message.transactionId
 }
 
-func (message *StunMessage) GetType() StunMessageType {
+func (message *Message) GetType() MessageType {
 	return message.messageType
 }
 
-func (message *StunMessage) GetMagicCookie() int {
+func (message *Message) GetMagicCookie() int {
 	return message.magicCookie
 }
 
-func (message *StunMessage) GetMappedAddress() *net.UDPAddr {
+func (message *Message) GetMappedAddress() *net.UDPAddr {
 	return message.mappedAddress
 }
 
-func (message *StunMessage) GetResponseAddress() *net.UDPAddr {
+func (message *Message) GetResponseAddress() *net.UDPAddr {
 	return message.responseAddress
 }
 
-func (message *StunMessage) GetSourceAddress() *net.UDPAddr {
+func (message *Message) GetSourceAddress() *net.UDPAddr {
 	return message.sourceAddress
 }
 
-func (message *StunMessage) GetChangedAddress() *net.UDPAddr {
+func (message *Message) GetChangedAddress() *net.UDPAddr {
 	return message.changedAddress
 }
 
-func (message *StunMessage) GetChangeRequest() *StunChangeRequest {
+func (message *Message) GetChangeRequest() *Request {
 	return message.changeRequest
 }
 
-func (message *StunMessage) GetErrorCode() *StunErrorCode {
+func (message *Message) GetErrorCode() *Code {
 	return message.errorCode
 }
 
-func NewStunMessage() *StunMessage {
-	message := &StunMessage{
+func NewStunMessage() *Message {
+	message := &Message{
 		transactionId: make([]byte, 12),
 	}
 	//rand.Read(message.transactionId)
@@ -64,20 +64,20 @@ func NewStunMessage() *StunMessage {
 	return message
 }
 
-func NewStunMessage1(messageType StunMessageType) *StunMessage {
+func NewStunMessage1(messageType MessageType) *Message {
 	message := NewStunMessage()
 	message.messageType = messageType
 	return message
 }
 
-func NewStunMessage2(messageType StunMessageType, changeRequest *StunChangeRequest) *StunMessage {
+func NewStunMessage2(messageType MessageType, changeRequest *Request) *Message {
 	message := NewStunMessage1(messageType)
 	message.changeRequest = changeRequest
 	return message
 }
 
 // Parses STUN message from raw data packet.
-func (message *StunMessage) Parse(data []byte) error {
+func (message *Message) Parse(data []byte) error {
 
 	if data == nil {
 		return errors.New("data is null")
@@ -111,7 +111,7 @@ func (message *StunMessage) Parse(data []byte) error {
 	//--- message header --------------------------------------------------
 
 	// STUN Message Type
-	messageType := StunMessageType(binary.BigEndian.Uint16(data[offset:]))
+	messageType := MessageType(binary.BigEndian.Uint16(data[offset:]))
 	offset += 2
 	switch messageType {
 	case BindingErrorResponse, BindingRequest, BindingResponse, SharedSecretErrorResponse, SharedSecretRequest, SharedSecretResponse:
@@ -120,7 +120,7 @@ func (message *StunMessage) Parse(data []byte) error {
 		return errors.New("Invalid STUN message type value !")
 	}
 
-	//        System.out.println("StunMessageType " + type);
+	//        System.out.println("MessageType " + type);
 	// Message Length
 	//messageLength := int(data[offset])<<8 | int(data[offset+1])
 	messageLength := int(binary.BigEndian.Uint16(data[offset:]))
@@ -231,7 +231,7 @@ func (message *StunMessage) Parse(data []byte) error {
 	return nil
 }
 
-func (message *StunMessage) ToByteData() []byte {
+func (message *Message) ToByteData() []byte {
 
 	msg := make([]byte, 512)
 

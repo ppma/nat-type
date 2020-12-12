@@ -5,18 +5,8 @@ type NatType struct {
 	string
 }
 
-var NatTypes = []string{
-	"UdpBlocked",
-	"OpenInternet",
-	"SymmetricUdpFirewall",
-	"FullCone",
-	"RestrictedCone",
-	"PortRestrictedCone",
-	"Symmetric",
-	"Unknown"}
-
 func (natType NatType) String() string {
-	return NatTypes[natType.int]
+	return natType.string
 }
 
 var (
