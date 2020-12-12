@@ -3,14 +3,13 @@ package stun
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"net"
 	"time"
 )
 
 const (
-	UDP_SEND_COUNT      = 3
-	TRANSACTION_TIMEOUT = 1000
+	UdpSendCount       = 3
+	TransactionTimeout = 1000
 )
 
 func getAddr(stun string, local string) (*net.UDPAddr, *net.UDPAddr, error) {
@@ -31,6 +30,10 @@ func Query(stun string, local string) (*Result, error) {
 		return nil, err
 	}
 	socket, err := net.ListenUDP("udp", localAddr)
+	if err != nil {
+		return nil, err
+	}
+	defer socket.Close()
 	return Query2(stunAddr, socket, localAddr)
 }
 
@@ -108,7 +111,7 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 			// No NAT.
 			if localAddr.IP.Equal(test1Response.GetMappedAddress().IP) {
 				// IP相同
-				if test2Response, err := doTransaction(test2, socket, stunAddr, TRANSACTION_TIMEOUT); err == nil {
+				if test2Response, err := doTransaction(test2, socket, stunAddr, TransactionTimeout); err == nil {
 					// Open Internet.
 					if test2Response != nil {
 						return NewStunResult(OpenInternet, test1Response.GetMappedAddress().IP), nil
@@ -120,7 +123,7 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 			} else // NAT
 			{
 
-				if test2Response, err := doTransaction(test2, socket, stunAddr, TRANSACTION_TIMEOUT); err == nil {
+				if test2Response, err := doTransaction(test2, socket, stunAddr, TransactionTimeout); err == nil {
 
 					// Full cone NAT.
 					if test2Response != nil {
@@ -132,9 +135,8 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 						*/
 
 						// Test I(II)
-						//                        System.out.println("begin Test I(II)");
 						test12 := NewStunMessage1(BindingRequest)
-						if test12Response, err := doTransaction(test12, socket, test1Response.changedAddress, TRANSACTION_TIMEOUT); err == nil {
+						if test12Response, err := doTransaction(test12, socket, test1Response.changedAddress, TransactionTimeout); err == nil {
 							if test12Response == nil {
 								return nil, errors.New("STUN Test I(II) didn't get response !")
 							} else {
@@ -143,10 +145,9 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 									return NewStunResult(Symmetric, test1Response.GetMappedAddress().IP), nil
 								} else {
 									// Test III
-									//                                System.out.println("begin Test III");
 									test3 := NewStunMessage2(BindingRequest, NewStunChangeRequest(false, true))
 
-									if test3Response, err := doTransaction(test3, socket, test1Response.mappedAddress, TRANSACTION_TIMEOUT); err == nil {
+									if test3Response, err := doTransaction(test3, socket, test1Response.mappedAddress, TransactionTimeout); err == nil {
 										// Restricted
 										if test3Response != nil {
 											return NewStunResult(RestrictedCone, test1Response.GetMappedAddress().IP), nil
@@ -172,7 +173,6 @@ func Query2(stunAddr *net.UDPAddr, socket *net.UDPConn, localAddr *net.UDPAddr) 
 // Does STUN transaction. Returns transaction response or null if transaction failed.
 // Returns transaction response or null if transaction failed.
 func doTransaction(request *Message, socket *net.UDPConn, remoteEndPoint net.Addr, timeout int) (*Message, error) {
-	t1 := time.Now()
 	requestBytes := request.ToByteData()
 	if request.GetChangeRequest() != nil {
 	}
@@ -181,27 +181,24 @@ func doTransaction(request *Message, socket *net.UDPConn, remoteEndPoint net.Add
 	receiveCount := 0
 	receiveBuffer := make([]byte, 512)
 	response := NewStunMessage()
-	for receiveCount < UDP_SEND_COUNT {
-		socket.SetWriteDeadline(time.Now().Add(time.Duration(timeout) * time.Millisecond))
+	for receiveCount < UdpSendCount {
+		_ = socket.SetWriteDeadline(time.Now().Add(time.Duration(timeout) * time.Millisecond))
 		if _, err := socket.WriteTo(requestBytes, remoteEndPoint); err == nil {
-			socket.SetReadDeadline(time.Now().Add(time.Duration(timeout) * time.Millisecond))
+			_ = socket.SetReadDeadline(time.Now().Add(time.Duration(timeout) * time.Millisecond))
 			if _, err := socket.Read(receiveBuffer); err == nil {
 				// parse message
-				response.Parse(receiveBuffer)
-				// Check that transaction ID matches or not response what we want.
-				if bytes.Equal(request.transactionId, response.transactionId) {
-					revResponse = true
-				} else {
-					fmt.Println("TransactionId not match!")
-					return nil, errors.New("TransactionId not match!")
+				if err := response.Parse(receiveBuffer); err == nil {
+					// Check that transaction ID matches or not response what we want.
+					if bytes.Equal(request.transactionId, response.transactionId) {
+						revResponse = true
+					} else {
+						return nil, errors.New("TransactionId not match!")
+					}
 				}
 			}
 		}
 		receiveCount += 1
 	}
-	t2 := time.Now()
-	fmt.Println("doTransaction time ", t2.Sub(t1))
-
 	if revResponse {
 		return response, nil
 	} else {
