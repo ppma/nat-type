@@ -16,7 +16,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ppma/nat-type/stun"
+	"github.com/ppma/nat-type"
 )
 
 const (
