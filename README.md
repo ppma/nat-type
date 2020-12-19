@@ -6,9 +6,9 @@
 
 ## 介绍
 
-[nat-type](/ppma/nat-type) 是 [RFC 3489][1]
+[nat-type]() 是 [RFC 3489][1]
 的go实现，从 [NatTypeDetector](https://github.com/cdnbye/NatTypeDetector) 移植而来。
-代码写得烂，思想跟不上，就这样了
+代码写得烂，思想跟不上，就这样了，补上一句一只企鹅狗司马
 
 ## 使用
 
@@ -33,7 +33,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("Nat type: ", stun.result.GetNatType())
-	fmt.Println("Public IP: ", stun.result.GetIpAddr())
+	fmt.Println("Nat type: ", result.GetNatType())
+	fmt.Println("Public IP: ", result.GetIpAddr())
 }
 ```
