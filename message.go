@@ -158,9 +158,7 @@ func (message *Message) Parse(data []byte) error {
 		offset += 2
 		switch attributeType {
 		case MappedAddress:
-			//                System.out.println("type == AttributeType.MappedAddress");
 			message.mappedAddress = parseIPAddr(data, offset)
-			//                System.out.println("mappedAddress " + mappedAddress.getAddress() + " " + mappedAddress.getPort());
 			offset += 8
 		case ResponseAddress:
 			// RESPONSE-ADDRESS

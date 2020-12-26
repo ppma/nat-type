@@ -1,6 +1,6 @@
 package stun
 
-type AttributeType int
+type AttributeType uint
 
 const (
 	Undefined AttributeType = iota
@@ -19,3 +19,28 @@ const (
 	XorOnly
 	ServerName
 )
+
+var attributeTypeNames = []string{
+	"Undefined",
+	"MappedAddress",
+	"ResponseAddress",
+	"ChangeRequest",
+	"SourceAddress",
+	"ChangedAddress",
+	"Username",
+	"Password",
+	"MessageIntegrity",
+	"ErrorCode",
+	"UnknownAttribute",
+	"ReflectedFrom",
+	"XorMappedAddress",
+	"XorOnly",
+	"ServerName",
+}
+
+func (t AttributeType) String() string {
+	if t <= ServerName {
+		return attributeTypeNames[t]
+	}
+	return ""
+}
